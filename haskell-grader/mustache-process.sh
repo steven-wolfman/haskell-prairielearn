@@ -4,20 +4,23 @@
 # Bash script template based on https://betterdev.blog/minimal-safe-bash-script-template/
 
 set -Eeuo pipefail
-shopt -s globstar
+shopt -s globstar extglob nullglob
 
+MUSTACHE_FILE_PATTERN=".mustache"
+EXTENSION_GLOB="**/?*${MUSTACHE_FILE_PATTERN}?(.*)"
 DEFAULT_DATA_SOURCE=/grade/data/data.json
 DATA_SOURCE="${DEFAULT_DATA_SOURCE}"
 
 USAGE=$(cat <<EOF
 Usage: $(basename "${BASH_SOURCE[0]}") [-h] [<formatter>]
 
-Mustache expansion for files in the current subtree with the extension .mustace.
-Results are placed in files with matching paths but without the .mustache extension.
+Mustache expansion for files in the current subtree with the extension ${MUSTACHE_FILE_PATTERN}.
+Results are placed in files with matching paths but without the ${MUSTACHE_FILE_PATTERN} extension.
 Formats using <formatter> (defaulting to "${DEFAULT_DATA_SOURCE}").
 
-Assumes the availability of 'mustache' program on path. Does not process files
-named exactly '.mustache'. The subtree rooted at CWD is defined by the "**" pattern.
+The extension ${MUSTACHE_FILE_PATTERN} can appear anywhere in the filename
+(set off by periods) except at the start, e.g., "foo${MUSTACHE_FILE_PATTERN}.txt".
+The subtree is defined by "**"; so, hidden directories are not processed.
 
 Available options:
 
@@ -67,7 +70,7 @@ parse_params() {
     DATA_SOURCE="${1-}"
     shift
   else
-    msg "Using default formatter at: ${DATA_SOURCE}"
+    msg "Using default formatter location: ${DATA_SOURCE}"
   fi
 
   # Check for disallowed arguments:
@@ -80,16 +83,27 @@ parse_params "$@"
 
 # script logic here
 
+if [[ ! -x $(command -v mustache) ]]
+then
+    die "mustache command not found; see https://mustache.github.io/"
+fi
+
 if [[ ! -f "${DATA_SOURCE}" ]]
 then
-    die "No file found at: ${DATA_SOURCE}"
+    die "No formatter file found at: ${DATA_SOURCE}"
 fi
 
 msg "Using formatter: ${DATA_SOURCE}"
 
-for i in **/?*.mustache
+# Test formatting of data source
+mustache "${DATA_SOURCE}" /dev/null 2> /dev/null || die "Not recognized as valid YAML/JSON formatter: ${DATA_SOURCE}"
+
+matches=($EXTENSION_GLOB)
+msg "Processing ${MUSTACHE_FILE_PATTERN} files."
+for i in "${matches[@]}"
 do
-    basei="${i%.mustache}"
-    msg "Processing ${i}"
+    basei="${i/.mustache/}"
+    msg "  Processing ${i}"
     mustache "${DATA_SOURCE}" "${i}" > "${basei}"
 done
+msg "Done processing ${MUSTACHE_FILE_PATTERN} files."
