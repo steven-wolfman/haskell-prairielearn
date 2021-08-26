@@ -1,0 +1,48 @@
+name:                dummy-project-for-stack-caching
+version:             0.1.0.0
+github:              "githubuser/dummy-project-for-stack-caching"
+license:             BSD3
+author:              "Author name here"
+maintainer:          "example@example.com"
+copyright:           "2021 Author name here"
+
+extra-source-files:
+- README.md
+
+# Metadata used when publishing your package
+# synopsis:            Short description of your package
+# category:            Web
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description:         This is here as a dummy project to force stack to cache file downloads. Ensure the dependencies below cover anything you expect to use in PrairieLearn questions!
+
+# Based this on the large set Mattox Beckman already had for his course.
+dependencies:
+- base
+#- unordered-containers
+#- mtl
+#- parsec 
+- test-framework
+- test-framework-quickcheck2
+- test-framework-hunit
+- QuickCheck >= 2.9.0
+#- regex-tdfa
+#- HUnit >= 1.5
+- tasty
+#- tasty-hunit
+- tasty-quickcheck
+- quickcheck-io
+- filepath
+#- lens
+#- haskell-src-exts
+
+tests:
+  dummy-project-for-stack-caching-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
