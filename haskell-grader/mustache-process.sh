@@ -29,13 +29,14 @@ MUSTACHE_FILE_PATTERN=".mustache"
 EXTENSION_GLOB="**/?*${MUSTACHE_FILE_PATTERN}?(.*)"
 DEFAULT_DATA_SOURCE=/grade/data/data.json
 DATA_SOURCE="${DEFAULT_DATA_SOURCE}"
+RETAIN="yes"
 
 USAGE=$(cat <<EOF
 Usage: $(basename "${BASH_SOURCE[0]}") [-h] [<formatter>]
 
 Mustache expansion for files in the current subtree with the extension ${MUSTACHE_FILE_PATTERN}.
 Results are placed in files with matching paths but without the ${MUSTACHE_FILE_PATTERN} extension.
-Formats using <formatter> (defaulting to "${DEFAULT_DATA_SOURCE}").
+Formats using <formatter>, defaulting to "${DEFAULT_DATA_SOURCE}".
 
 The extension ${MUSTACHE_FILE_PATTERN} can appear anywhere in the filename
 (set off by periods) except at the start, e.g., "foo${MUSTACHE_FILE_PATTERN}.txt".
@@ -43,6 +44,7 @@ The subtree is defined by "**"; so, hidden directories are not processed.
 
 Available options:
 
+-d, --delete    Delete the original ${MUSTACHE_FILE_PATTERN} files
 -h, --help      Print this help and exit
 -v, --verbose   Print script debug info (bash -x option)
 EOF
@@ -75,6 +77,7 @@ dieUI() {
 parse_params() {
   while :; do
     case "${1-}" in
+    -d | --delete) RETAIN="no" ;; 
     -h | --help) usage ;;
     -v | --verbose) set -x ;;
     -?*) dieUI "Unknown option: $1" ;;
@@ -124,5 +127,9 @@ do
     basei="${i/.mustache/}"
     msg "  Processing ${i}"
     mustache "${DATA_SOURCE}" "${i}" > "${basei}"
+    if [[ "${RETAIN}" != "yes" ]] 
+    then
+      rm "${i}"
+    fi
 done
 msg "Done processing ${MUSTACHE_FILE_PATTERN} files."

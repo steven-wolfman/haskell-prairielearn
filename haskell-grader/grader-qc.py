@@ -117,7 +117,7 @@ def main():
                print("wereDone")
             break
         elif state == 1:
-            message = message + line
+            message = message + "\n" + line
 
     if state==1:
         tests_results_dict['Fail'][testName] = (message,points)
