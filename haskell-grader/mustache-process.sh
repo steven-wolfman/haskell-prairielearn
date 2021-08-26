@@ -18,6 +18,9 @@
 # (You'll adjust that to get the mustache-process.sh path right, most likely changing
 # "autograder".) You almost certainly want to perform processing before testing student
 # code!
+#
+# If you/your programming language already uses {{ }} as syntactically meaningful,
+# see https://mustache.github.io/mustache.5.html#Set-Delimiter.
 
 set -Eeuo pipefail
 shopt -s globstar extglob nullglob
