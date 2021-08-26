@@ -15,6 +15,12 @@
 #
 #   (cd /grade/tests/ && /grade/shared/autograder/mustache-process.sh)
 #
+# You may want to use the -d option to delete the original .mustache files. HOWEVER,
+# it's also handy in your testing directory to soft-link your .mustache file to a
+# non-.mustache version (which you can then use as your test harness, if you're
+# careful with how you use {{...}}). If you do that and use -d, you'll end up just
+# deleting both files.
+#
 # (You'll adjust that to get the mustache-process.sh path right, most likely changing
 # "autograder".) You almost certainly want to perform processing before testing student
 # code!
@@ -30,6 +36,14 @@ EXTENSION_GLOB="**/?*${MUSTACHE_FILE_PATTERN}?(.*)"
 DEFAULT_DATA_SOURCE=/grade/data/data.json
 DATA_SOURCE="${DEFAULT_DATA_SOURCE}"
 RETAIN="yes"
+
+# Temp file management based on https://unix.stackexchange.com/a/181938
+TEMPFILE=$(mktemp /tmp/mustache-process.XXXXXX)
+exec 3>"$TEMPFILE"  # echo ... >&3 writes to that file
+exec 4<"$TEMPFILE"  # <&4 reads from the file
+rm "$TEMPFILE"      # deletes the directory entry for the file, but retains the inode
+# File is automatically deleted when the script ends.
+
 
 USAGE=$(cat <<EOF
 Usage: $(basename "${BASH_SOURCE[0]}") [-h] [<formatter>]
@@ -126,7 +140,8 @@ for i in "${matches[@]}"
 do
     basei="${i/.mustache/}"
     msg "  Processing ${i}"
-    mustache "${DATA_SOURCE}" "${i}" > "${basei}"
+    # Inserting a temporary file in case one file is a symlink to the other!
+    mustache "${DATA_SOURCE}" "${i}" >&3 && cat <&4 > "${basei}"
     if [[ "${RETAIN}" != "yes" ]] 
     then
       rm "${i}"
