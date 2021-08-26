@@ -2,6 +2,22 @@
 
 # Mustache processing intended primarily for use with PrairieLearn external graders.
 # Bash script template based on https://betterdev.blog/minimal-safe-bash-script-template/
+#
+#
+# For use in a PrairieLearn autograder: Ensure your Docker image has mustache. E.g., add
+# this or the equivalent for your installation system to your Dockerfile:
+# 
+#   RUN yum install -y rubygems && gem install mustache
+#
+# Then, place this script in your autograder server files (or your Docker image).
+# Then, run this script with no arguments as part of your entrypoint script in whatever 
+# directory you want to process when you want to perform processing. E.g.:
+#
+#   (cd /grade/tests/ && /grade/shared/autograder/mustache-process.sh)
+#
+# (You'll adjust that to get the mustache-process.sh path right, most likely changing
+# "autograder".) You almost certainly want to perform processing before testing student
+# code!
 
 set -Eeuo pipefail
 shopt -s globstar extglob nullglob
