@@ -34,6 +34,7 @@ dependencies:
 #- tasty-hunit
 - tasty-quickcheck
 - quickcheck-io
+- quickcheck-assertions
 - filepath
 #- lens
 #- haskell-src-exts
