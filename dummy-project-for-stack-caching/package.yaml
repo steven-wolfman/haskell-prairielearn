@@ -38,6 +38,7 @@ dependencies:
 - filepath
 #- lens
 #- haskell-src-exts
+- regex-tdfa
 
 tests:
   dummy-project-for-stack-caching-test:
