@@ -61,6 +61,10 @@ Here\'s the simple version:
     rather than `=P=`. However, any failure on a required test zeroes
     out the whole student score. On passes, required tests act just like
     standard property tests.
+-   TODO: "Error" tests look the same as property tests except using `=E=`.
+    If any error test fails, no more test data will be processed, and
+    the "gradable" flag to PrairieLearn will be set to false, meaning
+    the run won't count against students.
 
 A property test\'s name is its group name, followed by `" / "` (i.e., a
 slash surrounded by spaces), followed by its test name. A required
@@ -107,6 +111,7 @@ named \"curry / favor\" with both earned and maximum points of 1.
 recorded. Nothing is recorded *separately* for a group line. It only
 impacts subsequent test lines.)
 
+(TODO: Out of date paragraph; does not discuss `=E=`: 
 In more detail: `=R=` or `=P=` can be preceeded by any number of spaces.
 (As of now, `=G=` cannot have initial whitespace, which matches what
 `testGroup` and `testProperty` do with test names?) The `=*=` designator
@@ -118,13 +123,16 @@ subsequent space), interspersed with any other text. The `points`, `OK`,
 and `FAIL` or `Failed` strings must be exactly as written (e.g., no \"(1
 point):\" or \"ok\" allowed). (As written now, an \"OK\" overrides a
 \"FAIL\"/\"Failed\" if both occured on the same line.) Point numbers can
-only be digits and are in base 10, regardless of leading 0s.
+only be digits and are in base 10, regardless of leading 0s.)
 
 ***All* tests should be in a group.** Tests not in a group *are* in a
 group with an empty name, and there is no way to end a group except to
 start another. (That also implies that groups cannot be nested.)
+Indeed, in the case that a test produces an error, the framework relies
+on finding an `=G=` code before the failure occurs to determine that
+testing got started.
 
-For reference, here\'s the most relevant source code:
+For reference, here\'s the most relevant source code (TODO: out of date: `=E=`):
 
 ``` python
 propPass = re.match(" *=[RP]= (.*) \(([0-9]+) points\): .*OK.*",line)

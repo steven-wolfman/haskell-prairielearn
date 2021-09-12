@@ -49,7 +49,8 @@ def main():
 
     # States
     # 0 = Normal
-    # 1 = Reading an error (stop on =G= or =P= or =R=)
+    # 1 = Reading an error (back to 0 on next =*= flag)
+    # 2 = Reading an error on a =E= test (stop on next =*= flag)
 
     state = 0
 
@@ -66,18 +67,21 @@ def main():
         if debug:
            print(state, line)
 
-        propPass = re.match(" *=[RP]= (.*) \(([0-9]+) points\): .*OK.*",line)
+        propPass = re.match(" *=[RPE]= (.*) \(([0-9]+) points\): .*OK.*",line)
         propFail = re.match(" *=P= (.*) \(([0-9]+) points\): .*(FAIL|Failed).*",line)
         reqFail = re.match(" *=R= (.*) \(([0-9]+) points\): .*(FAIL|Failed).*",line)
+        errFail = re.match(" *=E= (.*) \(([0-9]+) points\): .*(FAIL|Failed).*",line)
         groupStart = re.match("=G= (.*)",line)
         wereDone = re.match("( *Properties *Total|[0-9]+ out of [0-9]+ tests)",line)
 
         if propPass:
             if debug:
                print("propPass")
-            if state==1:
+            if state>=1:
                 tests_results_dict['Fail'][testName] = (message,points)
                 message = ""
+                if state == 2:
+                    break
                 state= 0
             testName = groupName + " / " + propPass.group(1)
             points = int(propPass.group(2))
@@ -86,9 +90,11 @@ def main():
         elif propFail:
             if debug:
                print("propFail")
-            if state==1:
+            if state>=1:
                 tests_results_dict['Fail'][testName] = (message,points)
                 message = ""
+                if state == 2:
+                    break
                 state= 0
             testName = groupName + " / " + propFail.group(1)
             points = int(propFail.group(2))
@@ -96,33 +102,50 @@ def main():
         elif reqFail:
             if debug:
                print("reqFail")
-            if state==1:
+            if state>=1:
                 tests_results_dict['Fail'][testName] = (message,points)
                 message = ""
+                if state == 2:
+                    break
                 state= 0
             testName = groupName + " / All Or Nothing: " + reqFail.group(1)
             points = int(reqFail.group(2))
             state = 1
             allFail = True
+        elif errFail:
+            if debug:
+               print("errFail")
+            if state>=1:
+                tests_results_dict['Fail'][testName] = (message,points)
+                message = ""
+                if state == 2:
+                    break
+                state= 0
+            testName = groupName + " / Required to Proceed: " + errFail.group(1)
+            points = int(reqFail.group(2))
+            state = 2
+            allFail = True
         elif groupStart:
             if debug:
                print("groupStart")
-            if state==1:
+            if state>=1:
                 tests_results_dict['Fail'][testName] = (message,points)
                 message = ""
+                if state == 2:
+                    break
                 state= 0
             groupName = groupStart.group(1)
         elif wereDone:
             if debug:
                print("wereDone")
             break
-        elif state == 1:
+        elif state >= 1:
             message = message + "\n" + line
 
-    if state==1:
+    if state>=1:
         tests_results_dict['Fail'][testName] = (message,points)
         message = ""
-        state= 0
+
     #The final structure of tests_results_dict:
     #      {'Pass': {'Name1':Points1,'Name2':Points2},
     #       'Fail': {'Name3': ('Message3',Points3),
@@ -159,7 +182,7 @@ def main():
 
     grading_result['tests'] = test_results
 
-    grading_result['succeeded'] = True
+    grading_result['succeeded'] = state < 2
     if total_points > 0:
         tscore = float(earned_points) / float(total_points)
     else:
