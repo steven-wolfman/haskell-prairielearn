@@ -136,7 +136,7 @@ mustache "${DATA_SOURCE}" /dev/null 2> /dev/null || die "Not recognized as valid
 
 matches=($EXTENSION_GLOB)
 msg "Processing ${MUSTACHE_FILE_PATTERN} files."
-for i in "${matches[@]}"
+for i in ${matches[@]+"${matches[@]}"}
 do
     basei="${i/.mustache/}"
     msg "  Processing ${i}"
