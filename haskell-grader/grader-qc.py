@@ -4,6 +4,13 @@ import json
 import subprocess
 import tempfile
 
+PER_TEST_TIMEOUT_SECS = 2
+STACK_RUN_COMMAND = [
+    '/usr/local/bin/stack', 
+    'test', 
+    f'--test-arguments="--timeout={PER_TEST_TIMEOUT_SECS}"'
+]
+
 def main():
 
     grading_result = {}
@@ -11,7 +18,7 @@ def main():
     # Attempt to compile student code
     try:
         #'stack test' would compile and run tests cases at the same time
-        subprocess.check_output(['/usr/local/bin/stack', 'test'], stderr=subprocess.STDOUT, timeout=60)
+        subprocess.check_output(STACK_RUN_COMMAND, stderr=subprocess.STDOUT, timeout=60)
 
     except subprocess.CalledProcessError as e:
         # Compilation failed :(
@@ -40,7 +47,7 @@ def main():
     #read the output of terminal
     #Citation: fix the bug of subprocess.Popen for large output https://stackoverflow.com/questions/4408377/how-can-i-get-terminal-output-in-python
     with tempfile.TemporaryFile() as tempf:
-        proc = subprocess.Popen(['/usr/local/bin/stack', 'test'], stdout=tempf)
+        proc = subprocess.Popen(STACK_RUN_COMMAND, stdout=tempf)
         proc.wait(timeout=60)
         tempf.seek(0)
         tests_results_raw = tempf.read().decode().split('\n')
