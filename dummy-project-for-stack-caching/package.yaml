@@ -39,6 +39,7 @@ dependencies:
 #- lens
 #- haskell-src-exts
 - regex-tdfa
+- IOSpec
 
 tests:
   dummy-project-for-stack-caching-test:
