@@ -157,82 +157,63 @@ your question, beyond the usual for any PrairieLearn question and
 [external
 grading](https://prairielearn.readthedocs.io/en/latest/externalGrading/):
 
-`question.html`
-:   Set this up so that students will submit a file named `Lib.hs`.
-
-`info.json`
-
-:   Configuration for external grading. You\'ll want something like the
-    following:
-
-    ``` javascript
-    "gradingMethod": "External",
-    "externalGradingOptions": {
-      "enabled": true,
-      "image": "cswolf/haskell-prairielearn",
-      "enableNetworking": false,
-      "serverFilesCourse": [
-        "haskell-grader/"
-      ],
-      "entrypoint": "/grade/serverFilesCourse/haskell-grader/run-qc-lib.sh"
-    }
++ `question.html`: Set this up so that students will submit a file named `Lib.hs`.
++ `info.json`: Configuration for external grading. You'll want something like the
+   following:
+   
+   ``` javascript
+   "gradingMethod": "External",
+   "externalGradingOptions": {
+     "enabled": true,
+     "image": "cswolf/haskell-prairielearn",
+     "enableNetworking": false,
+     "serverFilesCourse": [
+       "haskell-grader/"
+     ],
+     "entrypoint": "/grade/serverFilesCourse/haskell-grader/run-qc-lib.sh"
+   }
+   ```
+   
+   You will likely change the image name. You may want to enable
+   networking, depending on your needs. This assumes you have the
+   Haskell grading files under your PrairieLearn course\'s
+   `serverFilesCourse` folder in `haskell-grader`.
+   
+   You may want to add a timeout (inside the `externalGradingOptions`
+   block; it defaults to 30 seconds). You may also want to set
+   `singleVariant` to true.
++ `tests`: Folder with test contents.
+  
+  + Standard stack files: stack information needed to prepare and run your tests, but with
+    special notes below.
+    
+    (You'll probably want `.stack-work` in your `.gitignore` file.)
+  + `stack.yaml`:   Ensure this refers to the **same LTS version** as in the Docker
+    image, to avoid having to redownload/recache ghc and packages
+    (which will blow the timeout on students' tests!)
+  + `src/Lib-header.hs`:   A header to prepend to the student's submitted work. For
+    example, something like:
+     
+    ``` haskell
+    module Lib where
+    import Prelude hiding (map, foldl, foldr, zip, zipWith)
     ```
-
-    You will likely change the image name. You may want to enable
-    networking, depending on your needs. This assumes you have the
-    Haskell grading files under your PrairieLearn course\'s
-    `serverFilesCourse` folder in `haskell-grader`.
-
-    You may want to add a timeout (inside the `externalGradingOptions`
-    block; it defaults to 30 seconds). You may also want to set
-    `singleVariant` to true.
-
-`tests`
-
-:   Folder with test contents.
-
-    Standard stack files
-
-    :   stack information needed to prepare and run your tests, but with
-        special notes below.
-
-        (You\'ll probably want `.stack-work` in your `.gitignore` file.)
-
-    `stack.yaml`
-
-    :   Ensure this refers to the **same LTS version** as in the Docker
-        image, to avoid having to redownload/recache ghc and packages
-        (which will blow the timeout on students\' tests!)
-
-    `src/Lib-header.hs`
-
-    :   A header to prepend to the student\'s submitted work. For
-        example, something like:
-
-        ``` haskell
-        module Lib where
-
-        import Prelude hiding (map, foldl, foldr, zip, zipWith)
-        ```
-
-        will set up the module for students and explicitly import the
-        `Prelude`, hiding certain functions so they\'re not usable by
-        students. (Be sure to give instructions to students about what
-        they\'re not allowed to use if you do this!)
-
-        This file plus the student\'s submission will become a new
-        `src/Lib.hs` file before testing begins.
-
-    `src/Lib.hs`
-
-    :   Put your own reference solution here to run tests against during
-        development. (It will be replaced when testing student code as
-        described in the previous point.)
-
-    `test/Spec.hs`
-    :   Put the tests to run against student code here or in whatever
-        other location you configure `stack test` to expect.
-
+     
+    will set up the module for students and explicitly import the
+    `Prelude`, hiding certain functions so they're not usable by
+    students. (Be sure to give instructions to students about what
+    they're not allowed to use if you do this!)
+     
+    This file plus the student\'s submission will become a new
+    `src/Lib.hs` file before testing begins.
+     
+  + `src/Lib.hs`:   Put your own reference solution here to run tests against during
+    development. (It will be replaced when testing student code as
+    described in the previous point.)
+    
+  + `test/Spec.hs`:   Put the tests to run against student code here or in whatever
+    other location you configure `stack test` to expect.
+    
 **Additionally**, much like `question.html` goes through Mustache
 template expansion using the `data` JSON object, any file anywhere
 within the `tests` subdirectory tree named `*.mustache` will go through
