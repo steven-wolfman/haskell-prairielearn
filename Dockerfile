@@ -27,6 +27,12 @@ RUN yum install -y sudo && \
     yum install -y rubygems && \
     gem install mustache
 
+# Clean up.
+RUN yum clean all && \
+    rm -rf /var/cache/yum && \
+    rm -rf /tmp/* && \
+    rm -rf /var/tmp/*
+
 # RUN curl -sSL https://s3.amazonaws.com/download.fpcomplete.com/centos/7/fpco.repo | sudo tee /etc/yum.repos.d/fpco.repo
 # RUN yum -y install stack
 
