@@ -1,5 +1,7 @@
 FROM registry.access.redhat.com/ubi9/ubi:latest
 
+# I would like to use a multi-stage build to do the build below and then switch to ubi-minimal or ubi-micro instead.
+# But, for now, I'll just leave it like this.
 
 # UPDATE LTS HERE
 # Review https://www.stackage.org/ to compare ghc versions to what's available.
